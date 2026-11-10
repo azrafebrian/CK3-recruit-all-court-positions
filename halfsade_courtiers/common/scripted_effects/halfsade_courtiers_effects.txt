@@ -1,0 +1,529 @@
+﻿# Glossary for Edit
+#
+# Scope: recruiting ruler. Params: KEY (full position key), SKILL, SKILL2 (both get boosted),
+# TA/TB/TC/TD (traits), FEMALE / MALE (force gender, yes/no)
+# Aptitude scale: 3 = Good, 4 = Excellent
+#
+# Courtier Culture: 70% root culture, 29% other culture of root's heritage, 1% Greek (lol).
+# Courtier Dynasty: 95% lowborn, 5% new generated dynasty.
+# Courtier Traits: generate a character with random_traits = yes, then rebuilt:
+#   - all education + personality traits are removed.
+#   - education trait matching SKILL (prowess -> martial).
+#   - TA, TB, TC from the decision are added.
+#   - personality traits are counted; if fewer than 3, TD is tried first, then random good
+#     traits are added until the candidate has exactly 3 personality traits.
+#   - skill boost runs AFTER all traits, so any aptitude change is compensated.
+#
+# WARNING: Do not put education_* traits in TA/TB/TC.
+
+halfsade_courtiers_recruit_effect = {
+	random = {
+		chance = 50
+		halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 4 }
+		halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 4 }
+		halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 4 }
+	}
+	halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 3 }
+	halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 3 }
+	halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 3 }
+	halfsade_courtiers_try_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ TA = $TA$ TB = $TB$ TC = $TC$ TD = $TD$ FEMALE = $FEMALE$ MALE = $MALE$ LEVEL = 3 }
+	halfsade_courtiers_finish_effect = { KEY = $KEY$ }
+}
+
+# Attempt loop, skip if a courtier was already accepted.
+halfsade_courtiers_try_effect = {
+	if = {
+		limit = { NOT = { exists = scope:halfsade_courtier } }
+
+		halfsade_courtiers_pick_culture_effect = yes
+
+		if = {
+			limit = { random = 95 }
+
+			if = {
+				limit = { always = $FEMALE$ }
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					gender = female
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = none
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+			else_if = {
+				limit = { always = $MALE$ }
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					gender = male
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = none
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+			else = {
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = none
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+		}
+		else = {
+			if = {
+				limit = { always = $FEMALE$ }
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					gender = female
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = generate
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+			else_if = {
+				limit = { always = $MALE$ }
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					gender = male
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = generate
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+			else = {
+				create_character = {
+					employer = root
+					age = { 22 50 }
+					culture = scope:halfsade_culture
+					faith = root.faith
+					dynasty = generate
+					$SKILL$ = { 14 20 }
+					random_traits = yes
+					save_scope_as = halfsade_candidate
+				}
+			}
+		}
+
+		if = {
+			limit = { exists = scope:halfsade_candidate }
+
+			scope:halfsade_candidate = {
+				halfsade_courtiers_clear_education_effect = yes
+				halfsade_courtiers_clear_personality_effect = yes
+
+				halfsade_courtiers_edu_$SKILL$ = yes
+
+				add_trait = $TA$
+				add_trait = $TB$
+				add_trait = $TC$
+
+				if = {
+					limit = { var:halfsade_pcount < 3 }
+					add_trait = $TD$
+				}
+				halfsade_courtiers_fill_personality_effect = yes
+				halfsade_courtiers_fill_personality_effect = yes
+				halfsade_courtiers_fill_personality_effect = yes
+				remove_variable = halfsade_pcount
+
+				force_character_skill_recalculation = yes
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+				halfsade_courtiers_boost_effect = { KEY = $KEY$ SKILL = $SKILL$ SKILL2 = $SKILL2$ LEVEL = $LEVEL$ }
+			}
+
+			if = {
+				limit = {
+					scope:halfsade_candidate = {
+						aptitude = {
+							court_position = $KEY$
+							value >= $LEVEL$
+						}
+						can_be_employed_as = $KEY$
+					}
+				}
+				scope:halfsade_candidate = { save_scope_as = halfsade_courtier }
+			}
+			else = {
+				scope:halfsade_candidate = {
+					death = { death_reason = death_vanished }
+				}
+			}
+		}
+	}
+}
+
+# Stooge (Landless Adventurers)
+# Stooge aptitude goes UP as Learning goes DOWN.
+halfsade_courtiers_recruit_stooge_effect = {
+	random = {
+		chance = 50
+		halfsade_courtiers_try_stooge_effect = { LEVEL = 4 }
+		halfsade_courtiers_try_stooge_effect = { LEVEL = 4 }
+		halfsade_courtiers_try_stooge_effect = { LEVEL = 4 }
+	}
+	halfsade_courtiers_try_stooge_effect = { LEVEL = 3 }
+	halfsade_courtiers_try_stooge_effect = { LEVEL = 3 }
+	halfsade_courtiers_try_stooge_effect = { LEVEL = 3 }
+	halfsade_courtiers_try_stooge_effect = { LEVEL = 3 }
+	halfsade_courtiers_finish_effect = { KEY = stooge_camp_officer }
+}
+
+halfsade_courtiers_try_stooge_effect = {
+	if = {
+		limit = { NOT = { exists = scope:halfsade_courtier } }
+
+		halfsade_courtiers_pick_culture_effect = yes
+
+		if = {
+			limit = { random = 95 }
+			create_character = {
+				employer = root
+				age = { 22 50 }
+				culture = scope:halfsade_culture
+				faith = root.faith
+				dynasty = none
+				learning = { 0 3 }
+				random_traits = yes
+				save_scope_as = halfsade_candidate
+			}
+		}
+		else = {
+			create_character = {
+				employer = root
+				age = { 22 50 }
+				culture = scope:halfsade_culture
+				faith = root.faith
+				dynasty = generate
+				learning = { 0 3 }
+				random_traits = yes
+				save_scope_as = halfsade_candidate
+			}
+		}
+
+		if = {
+			limit = { exists = scope:halfsade_candidate }
+
+			scope:halfsade_candidate = {
+				halfsade_courtiers_clear_education_effect = yes
+				halfsade_courtiers_clear_personality_effect = yes
+				remove_trait = intellect_good_1
+				remove_trait = intellect_good_2
+				remove_trait = intellect_good_3
+
+				halfsade_courtiers_edu_diplomacy = yes
+
+				add_trait = trusting
+				add_trait = humble
+				add_trait = content
+				force_character_skill_recalculation = yes
+			}
+
+			if = {
+				limit = {
+					scope:halfsade_candidate = {
+						aptitude = {
+							court_position = stooge_camp_officer
+							value >= $LEVEL$
+						}
+						can_be_employed_as = stooge_camp_officer
+					}
+				}
+				scope:halfsade_candidate = { save_scope_as = halfsade_courtier }
+			}
+			else = {
+				scope:halfsade_candidate = {
+					death = { death_reason = death_vanished }
+				}
+			}
+		}
+	}
+}
+
+# Courtier Culture
+halfsade_courtiers_pick_culture_effect = {
+	random_list = {
+		70 = {
+			root.culture = { save_scope_as = halfsade_culture }
+		}
+		29 = {
+			root.culture = { save_scope_as = halfsade_culture }
+			random_culture_global = {
+				limit = {
+					has_same_culture_heritage = root.culture
+					NOT = { this = root.culture }
+					culture_number_of_counties > 0
+				}
+				save_scope_as = halfsade_culture
+			}
+		}
+		1 = {
+			culture:greek = { save_scope_as = halfsade_culture }
+		}
+	}
+}
+
+halfsade_courtiers_count_personality_effect = {
+	set_variable = { name = halfsade_pcount value = 0 }
+	if = { limit = { has_trait = brave } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = craven } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = calm } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = wrathful } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = chaste } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = lustful } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = content } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = ambitious } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = diligent } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = lazy } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = forgiving } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = vengeful } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = generous } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = greedy } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = gregarious } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = shy } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = honest } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = deceitful } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = humble } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = arrogant } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = just } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = arbitrary } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = patient } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = impatient } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = temperate } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = gluttonous } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = trusting } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = paranoid } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = zealous } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = cynical } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = compassionate } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = callous } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = sadistic } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = stubborn } change_variable = { name = halfsade_pcount add = 1 } }
+	if = { limit = { has_trait = fickle } change_variable = { name = halfsade_pcount add = 1 } }
+}
+
+halfsade_courtiers_fill_personality_effect = {
+	halfsade_courtiers_count_personality_effect = yes
+	if = {
+		limit = { var:halfsade_pcount < 3 }
+		halfsade_courtiers_random_personality_effect = yes
+	}
+}
+
+halfsade_courtiers_random_personality_effect = {
+	random_list = {
+		10 = { trigger = { NOT = { has_trait = brave } NOT = { has_trait = craven } } add_trait = brave }
+		10 = { trigger = { NOT = { has_trait = calm } NOT = { has_trait = wrathful } } add_trait = calm }
+		10 = { trigger = { NOT = { has_trait = diligent } NOT = { has_trait = lazy } } add_trait = diligent }
+		10 = { trigger = { NOT = { has_trait = forgiving } NOT = { has_trait = vengeful } } add_trait = forgiving }
+		10 = { trigger = { NOT = { has_trait = generous } NOT = { has_trait = greedy } } add_trait = generous }
+		10 = { trigger = { NOT = { has_trait = gregarious } NOT = { has_trait = shy } } add_trait = gregarious }
+		10 = { trigger = { NOT = { has_trait = honest } NOT = { has_trait = deceitful } } add_trait = honest }
+		10 = { trigger = { NOT = { has_trait = humble } NOT = { has_trait = arrogant } } add_trait = humble }
+		10 = { trigger = { NOT = { has_trait = just } NOT = { has_trait = arbitrary } } add_trait = just }
+		10 = { trigger = { NOT = { has_trait = patient } NOT = { has_trait = impatient } } add_trait = patient }
+		10 = { trigger = { NOT = { has_trait = temperate } NOT = { has_trait = gluttonous } } add_trait = temperate }
+		10 = { trigger = { NOT = { has_trait = compassionate } NOT = { has_trait = callous } } add_trait = compassionate }
+	}
+}
+
+# Courtier Traits
+halfsade_courtiers_edu_learning = {
+	random_list = {
+		60 = { add_trait = education_learning_4 }
+		40 = { add_trait = education_learning_3 }
+	}
+}
+halfsade_courtiers_edu_stewardship = {
+	random_list = {
+		60 = { add_trait = education_stewardship_4 }
+		40 = { add_trait = education_stewardship_3 }
+	}
+}
+halfsade_courtiers_edu_diplomacy = {
+	random_list = {
+		60 = { add_trait = education_diplomacy_4 }
+		40 = { add_trait = education_diplomacy_3 }
+	}
+}
+halfsade_courtiers_edu_intrigue = {
+	random_list = {
+		60 = { add_trait = education_intrigue_4 }
+		40 = { add_trait = education_intrigue_3 }
+	}
+}
+halfsade_courtiers_edu_martial = {
+	random_list = {
+		60 = { add_trait = education_martial_4 }
+		40 = { add_trait = education_martial_3 }
+	}
+}
+halfsade_courtiers_edu_prowess = {
+	halfsade_courtiers_edu_martial = yes
+}
+
+halfsade_courtiers_clear_education_effect = {
+	remove_trait = education_learning_1
+	remove_trait = education_learning_2
+	remove_trait = education_learning_3
+	remove_trait = education_learning_4
+	remove_trait = education_stewardship_1
+	remove_trait = education_stewardship_2
+	remove_trait = education_stewardship_3
+	remove_trait = education_stewardship_4
+	remove_trait = education_diplomacy_1
+	remove_trait = education_diplomacy_2
+	remove_trait = education_diplomacy_3
+	remove_trait = education_diplomacy_4
+	remove_trait = education_intrigue_1
+	remove_trait = education_intrigue_2
+	remove_trait = education_intrigue_3
+	remove_trait = education_intrigue_4
+	remove_trait = education_martial_1
+	remove_trait = education_martial_2
+	remove_trait = education_martial_3
+	remove_trait = education_martial_4
+}
+
+halfsade_courtiers_clear_personality_effect = {
+	remove_trait = brave
+	remove_trait = craven
+	remove_trait = calm
+	remove_trait = wrathful
+	remove_trait = chaste
+	remove_trait = lustful
+	remove_trait = content
+	remove_trait = ambitious
+	remove_trait = diligent
+	remove_trait = lazy
+	remove_trait = forgiving
+	remove_trait = vengeful
+	remove_trait = generous
+	remove_trait = greedy
+	remove_trait = gregarious
+	remove_trait = shy
+	remove_trait = honest
+	remove_trait = deceitful
+	remove_trait = humble
+	remove_trait = arrogant
+	remove_trait = just
+	remove_trait = arbitrary
+	remove_trait = patient
+	remove_trait = impatient
+	remove_trait = temperate
+	remove_trait = gluttonous
+	remove_trait = trusting
+	remove_trait = paranoid
+	remove_trait = zealous
+	remove_trait = cynical
+	remove_trait = compassionate
+	remove_trait = callous
+	remove_trait = sadistic
+	remove_trait = stubborn
+	remove_trait = fickle
+}
+
+halfsade_courtiers_boost_effect = {
+	if = {
+		limit = {
+			NOT = {
+				aptitude = {
+					court_position = $KEY$
+					value >= $LEVEL$
+				}
+			}
+		}
+		add_$SKILL$_skill = 3
+		add_$SKILL2$_skill = 3
+		force_character_skill_recalculation = yes
+	}
+}
+
+# Notification
+halfsade_courtiers_finish_effect = {
+	if = {
+		limit = { exists = scope:halfsade_courtier }
+
+		scope:halfsade_courtier = {
+			add_character_flag = {
+				flag = blocked_from_leaving
+				years = 25
+			}
+		}
+
+		if = {
+			limit = { can_employ_court_position_type = $KEY$ }
+			appoint_court_position = {
+				recipient = scope:halfsade_courtier
+				court_position = $KEY$
+			}
+		}
+		else_if = {
+			limit = { employs_court_position = $KEY$ }
+			random_court_position_holder = {
+				type = $KEY$
+				save_scope_as = halfsade_old_holder
+			}
+			replace_court_position = {
+				recipient = scope:halfsade_courtier
+				holder = scope:halfsade_old_holder
+				court_position = $KEY$
+			}
+			reverse_add_opinion = {
+				target = scope:halfsade_old_holder
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+
+		reverse_add_opinion = {
+			target = scope:halfsade_courtier
+			modifier = pleased_opinion
+			opinion = 20
+		}
+
+		send_interface_toast = {
+			type = event_toast_effect_good
+			title = halfsade_courtiers_arrived_title
+			left_icon = scope:halfsade_courtier
+			custom_tooltip = halfsade_courtiers_arrived_desc
+			custom_tooltip = halfsade_courtiers_n_$KEY$
+		}
+	}
+	else = {
+		if = {
+			limit = { has_treasury = no }
+			add_gold = medium_gold_value
+		}
+		send_interface_toast = {
+			type = event_toast_effect_bad
+			title = halfsade_courtiers_failed_title
+			custom_tooltip = halfsade_courtiers_failed_desc
+		}
+	}
+}

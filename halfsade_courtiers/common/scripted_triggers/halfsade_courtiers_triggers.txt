@@ -1,0 +1,6 @@
+﻿halfsade_courtiers_can_recruit_trigger = {
+	OR = {
+		can_employ_court_position_type = $KEY$
+		employs_court_position = $KEY$
+	}
+}

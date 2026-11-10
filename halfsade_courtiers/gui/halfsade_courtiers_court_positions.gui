@@ -1,0 +1,208 @@
+types CourtPositionTypes
+{
+	type vbox_court_positions = vbox
+	{
+		layoutpolicy_horizontal = expanding
+
+		spacing = 5
+
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			margin = { 15 15 }
+			margin_bottom = 10
+			spacing = 10
+
+			expand = {}
+
+			vbox = {
+				name = "salaries_tutorial_uses_this"
+				datacontext = "[CourtPositionsWindow.CourtPositionsExpenseBreakdown]"
+				visible = "[CourtPositionsWindow.HasEmployedPositions]"
+				minimumsize = { 200 0 }
+				layoutpolicy_vertical = expanding
+
+				tooltipwidget = {
+					widget_value_breakdown_tooltip = {}
+				}
+
+				vbox = {
+					layoutpolicy_horizontal = expanding
+
+					text_label_center = {
+						max_width = 250
+
+						text = "COURT_POSITIONS_WINDOW_MONTHLY_SALARY"
+					}
+
+					text_single = {
+						max_width = 250
+
+						text = "[CourtPositionsWindow.TotalPaidSalaries]"
+						default_format = "#high"
+						align = nobaseline
+					}
+				}
+			}
+
+			button_decision_entry = {
+				name = "recruit_position_decision"
+				datacontext = "[GetDecisionWithKey('halfsade_courtiers_recruit_decision')]"
+				visible = "[Decision.IsShownForPlayer]"
+				size = { 300 45 }
+				using = tooltip_se
+
+				onclick = "[OpenGameViewData( 'decision_detail', Decision.Self)]"
+			}
+
+			expand = {}
+		}
+
+		hbox = {
+			visible = "[Not( IsDataModelEmpty( CourtPositionsWindow.GetHeldPositions ) )]"
+			layoutpolicy_horizontal = expanding
+
+			hbox = {
+				margin = { 10 10 }
+				minimumsize = { 532 0 }
+				maximumsize = { 532 0 }
+
+				background = {
+					using = Background_Area_Dark
+				}
+
+				hbox = {
+					datamodel = "[CourtPositionsWindow.GetHeldPositions]"
+
+					text_single = {
+						max_width = 210
+
+						text = "COURT_POSITIONS_WINDOW_YOUR_POSITIONS"
+						align = nobaseline
+						margin_right = 6
+					}
+
+					item = {
+						icon = {
+							datacontext = "[CourtPosition.GetPositionType]"
+							texture = "[CourtPositionType.GetIcon]"
+							size = { 32 32 }
+
+							tooltipwidget = {
+								using = court_position_tooltip
+							}
+						}
+					}
+				}
+				expand = {}
+
+				hbox = {
+					margin_left = 10
+
+					text_single = {
+						max_width = 210
+
+						text = "COURT_POSITIONS_WINDOW_MONTHLY_SALARY_YOUR"
+						align = nobaseline
+					}
+
+					text_single = {
+						datacontext = "[CourtPositionsWindow.CourtPositionsIncomeBreakdown]"
+						visible = "[CourtPositionsWindow.CourtOwner.HoldsCourtPosition]"
+						margin_left = 10
+						max_width = 200
+
+						text = "[CourtPositionsWindow.TotalEarnedSalaries]"
+						default_format = "#high"
+						align = nobaseline
+
+						tooltipwidget = {
+							widget_value_breakdown_tooltip = {}
+						}
+					}
+				}
+			}
+			expand = {}
+		}
+
+		scrollbox = {
+			using = Animation_Tab_Switch
+
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+
+			blockoverride "scrollbox_margins"
+			{
+				margin = { 6 10 }
+				margin_right = 20
+			}
+
+			blockoverride "scrollbox_content"
+			{
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+
+				### Available Court Positions ###
+				fixedgridbox = {
+					name = "court_position_items"
+					layoutpolicy_horizontal = expanding
+
+					addcolumn = 180
+					addrow = 228
+					setitemsizefromcell = yes
+					datamodel_wrap = 3
+					flipdirection = yes
+
+					datamodel = "[CourtPositionsWindow.GetCourtPositions]"
+					item = {
+						widget_court_position_item = {}
+					}
+				}
+
+				vbox = {
+					visible = "[Not( IsDataModelEmpty( CourtPositionsWindow.GetDeniedCourtPositions ) )]"
+					margin_bottom = 8
+					spacing = 4
+
+					layoutpolicy_horizontal = expanding
+
+					oncreate = "[BindFoldOutContext]"
+
+					button_expandable_toggle_field = {
+						blockoverride "text"
+						{
+							text = "[CourtPositionsWindow.GetGroupTitle]"
+						}
+					}
+
+					vbox = {
+						visible = "[PdxGuiFoldOut.IsUnfolded]"
+						layoutpolicy_horizontal = expanding
+						layoutpolicy_vertical = expanding
+
+						fixedgridbox = {
+							name = "court_position_items"
+							layoutpolicy_horizontal = expanding
+
+							addcolumn = 180
+							addrow = 228
+							setitemsizefromcell = yes
+							datamodel_wrap = 3
+							flipdirection = yes
+
+							datamodel = "[CourtPositionsWindow.GetDeniedCourtPositions]"
+							item = {
+								widget_court_position_item = {}
+							}
+						}
+					}
+				}
+
+				blockoverride "scrollbox_expand" {
+					expand = {}
+				}
+			}
+		}
+
+		expand = {}
+	}
+}
